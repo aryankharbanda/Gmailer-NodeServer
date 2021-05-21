@@ -4,7 +4,7 @@ This is a NodeJS server using express to send emails using the Gmail REST API.
 ## To Run
 ```
 npm install
-nodemon server
+npm start
 ``` 
 
 ## About

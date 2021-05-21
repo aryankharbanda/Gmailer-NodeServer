@@ -107,8 +107,8 @@ router.post("/secretCode", (req, res) => {
 router.post("/sendEmail", (req, res) => {
 
     if (!oAuthClientExists) {
-        console.log('Configure OAuth2 Client before running this API, run getURL API again if already generated token');
-        res.status(400).send('Configure OAuth2 Client before running this API, run getURL API again if already generated token');
+        console.log('Configure OAuth2 Client before running this API');
+        res.status(400).send('Configure OAuth2 Client before running this API');
     }
 
     else {
