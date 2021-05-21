@@ -104,6 +104,8 @@ router.post("/secretCode", (req, res) => {
 
 });
 
+// POST request 
+// API to send emails after OAuth 2.0 authentication process 
 router.post("/sendEmail", (req, res) => {
 
     if (!oAuthClientExists) {
@@ -112,7 +114,6 @@ router.post("/sendEmail", (req, res) => {
     }
 
     else {
-
         // getting mail details from incoming json body 
         to = req.body.to;
         from = req.body.from;
@@ -150,7 +151,6 @@ router.post("/sendEmail", (req, res) => {
                 console.log(response);
                 res.status(200).send(response);
             }
-
         });
     }
 
