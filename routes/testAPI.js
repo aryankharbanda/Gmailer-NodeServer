@@ -6,7 +6,6 @@ const readline = require('readline');
 const { google } = require('googleapis');
 
 // If modifying these scopes, delete token.json.
-// const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
 const SCOPES = [
     'https://mail.google.com/',
     'https://www.googleapis.com/auth/gmail.modify',
@@ -19,11 +18,12 @@ const SCOPES = [
 // time.
 const TOKEN_PATH = 'config/token.json';
 
+// boolean to check if oAuth2Client is configured or not
 var oAuthClientExists = false;
 var oAuth2Client = {};
 
 // POST request 
-// Just a test API to check if server is working properly or not
+// API to initiate process of obtaining Gmail user's credentials using OAuth 2.0
 router.post("/getURL", (req, res) => {
 
     // Load client secrets from a local file.
@@ -40,6 +40,8 @@ router.post("/getURL", (req, res) => {
             const { client_secret, client_id, redirect_uris } = credentials.installed;
             oAuth2Client = new google.auth.OAuth2(
                 client_id, client_secret, redirect_uris[0]);
+            
+            // boolean is set true
             oAuthClientExists = true;
 
             // Check if we have previously stored a token.
@@ -53,7 +55,7 @@ router.post("/getURL", (req, res) => {
                     res.status(200).json({ URL: authUrl });
                 }
                 else {
-                    // set credentials but don't send email
+                    // set credentials of existing token
                     oAuth2Client.setCredentials(JSON.parse(token));
                     // sendMessage(oAuth2Client);
                     res.status(302).send('token.json already exists');
@@ -65,14 +67,17 @@ router.post("/getURL", (req, res) => {
 
 });
 
-
+// POST request 
+// API to complete OAuth 2.0 process by providing secretCode given by authorization URL
 router.post("/secretCode", (req, res) => {
+    
     if (!oAuthClientExists) {
         console.log('Configure OAuth2 Client before running this API');
         res.status(400).send('Configure OAuth2 Client before running this API');
     }
 
     else {
+        // getting secet code from incoming json body 
         const secCode = req.body.code;
         oAuth2Client.getToken(secCode, (err, token) => {
             if (err) {
@@ -92,7 +97,6 @@ router.post("/secretCode", (req, res) => {
                         res.status(200).send('Token stored successfully');
                     }
                 });
-                // sendMessage(oAuth2Client);
             }
         });
     }
@@ -101,19 +105,21 @@ router.post("/secretCode", (req, res) => {
 });
 
 router.post("/sendEmail", (req, res) => {
-    // console.log(auth)
 
     if (!oAuthClientExists) {
-        console.log('Configure OAuth2 Client before running this API');
-        res.status(400).send('Configure OAuth2 Client before running this API');
+        console.log('Configure OAuth2 Client before running this API, run getURL API again if already generated token');
+        res.status(400).send('Configure OAuth2 Client before running this API, run getURL API again if already generated token');
     }
 
     else {
+
+        // getting mail details from incoming json body 
         to = req.body.to;
         from = req.body.from;
         subject = req.body.subject;
         message = req.body.message;
 
+        // converting mail details to MIME message
         var str = ["Content-Type: text/plain; charset=\"UTF-8\"\n",
             "MIME-Version: 1.0\n",
             "Content-Transfer-Encoding: 7bit\n",
@@ -123,9 +129,11 @@ router.post("/sendEmail", (req, res) => {
             message
         ].join('');
 
+        // encoding in base64
         var encodedMail = new Buffer(str).toString("base64").replace(/\+/g, '-').replace(/\//g, '_');
 
         const gmail = google.gmail({ version: 'v1', oAuth2Client });
+        // sending email
         gmail.users.messages.send({
             auth: oAuth2Client,
             userId: 'me',

@@ -7,10 +7,8 @@ const PORT = 4000;
 app.use(cors());
 app.use(express.json());
 
-
-var testAPIRouter = require("./routes/testAPI");
-
 // Routes
+var testAPIRouter = require("./routes/testAPI");
 app.use("/testAPI", testAPIRouter);
 
 app.listen(PORT, () => {
